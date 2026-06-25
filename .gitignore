@@ -1,0 +1,29 @@
+# User data and generated files (never publish or overwrite during updates)
+/data/
+/assets/
+/output/
+/logs/
+/API/.env
+
+# Bundled local runtimes and dependency caches (published separately in Releases)
+/python/
+/packages/
+
+# Python/runtime caches
+__pycache__/
+*.py[cod]
+*.log
+
+# Local secrets and editor/OS files
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Self-update temporary files
+/_self_restart.*
+/_update_*/
+*.tmp
