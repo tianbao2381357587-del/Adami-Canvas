@@ -1,0 +1,2 @@
+/* Adami-Canvas: 使用系统字体，未包含字体文件 */
+:root{--studio-font-sans: -apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',Arial,sans-serif;--studio-font-mono: Consolas,'Microsoft YaHei Mono',monospace;}
