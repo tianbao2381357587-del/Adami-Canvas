@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/static/images/logo.png?v=1.0" type="image/png">
+  <title>Adami-Canvas</title>
+  <script src="/static/vendor/js/lucide.js?v=1.0.1781845928"></script>
+  <style>
+    :root{--bg:#f5f7fb;--card:#ffffff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#dc2626;--accent-soft:#fff1f2;--sidebar:#ffffff;}
+    *{box-sizing:border-box} html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .app{display:flex;height:100vh;overflow:hidden}
+    .sidebar{width:246px;background:var(--sidebar);border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px;padding:8px 10px 14px;border-bottom:1px solid var(--line)}
+    .brand img{width:42px;height:38px;border-radius:0;object-fit:contain;background:transparent}
+    .brand-title{font-size:18px;font-weight:900;letter-spacing:0}
+    .brand-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .nav{display:flex;flex-direction:column;gap:8px}
+    .nav-label{padding:0 10px;font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+    .nav-btn{appearance:none;border:1px solid transparent;background:transparent;color:var(--text);display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;text-align:left;transition:.18s ease}
+    .nav-btn:hover{background:#f8fafc;border-color:#e5e7eb}
+    .nav-btn.active{background:var(--accent-soft);border-color:#fecdd3;color:#b91c1c;box-shadow:inset 0 0 0 1px rgba(220,38,38,.06)}
+    .nav-btn .meta{display:flex;flex-direction:column;gap:2px}
+    .nav-btn .meta small{font-size:12px;font-weight:500;color:var(--muted)}
+    .update-badge{display:none;margin-left:auto;min-width:8px;height:8px;border-radius:999px;background:#ef4444;box-shadow:0 0 0 3px #fee2e2}
+    .update-badge.show{display:block}
+    .hint{margin-top:auto;padding:12px 14px;border:1px dashed #cbd5e1;border-radius:14px;background:#f8fafc;color:#475569;font-size:12px;line-height:1.65}
+    .main{flex:1;display:flex;flex-direction:column;min-width:0}
+    .topbar{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(10px)}
+    .page-title{font-size:18px;font-weight:900}
+    .page-sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .content{flex:1;min-height:0;background:#fff}
+    iframe{width:100%;height:100%;border:0;background:#fff}
+    .update-modal[hidden]{display:none}
+    .update-modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:rgba(15,23,42,.38);backdrop-filter:blur(7px)}
+    .update-card{width:min(480px,100%);overflow:hidden;border:1px solid #e2e8f0;border-radius:20px;background:#fff;box-shadow:0 24px 70px rgba(15,23,42,.24)}
+    .update-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 14px}
+    .update-title{font-size:18px;font-weight:900}.update-close{border:0;background:transparent;color:#64748b;cursor:pointer;padding:6px;border-radius:9px}.update-close:hover{background:#f1f5f9}
+    .update-body{padding:0 22px 20px}.update-version{display:flex;gap:10px;margin:4px 0 14px}.version-chip{flex:1;padding:12px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;font-size:12px;color:#64748b}.version-chip strong{display:block;margin-top:4px;color:#0f172a;font-size:15px}
+    .update-status{min-height:42px;padding:12px 14px;border-radius:12px;background:#f8fafc;color:#475569;font-size:13px;line-height:1.5}.update-status.ok{background:#ecfdf5;color:#047857}.update-status.warn{background:#fff7ed;color:#c2410c}.update-status.error{background:#fef2f2;color:#b91c1c}
+    .update-notes{margin:14px 0 0;padding-left:20px;color:#475569;font-size:13px;line-height:1.75;max-height:170px;overflow:auto}.update-protect{margin-top:14px;color:#64748b;font-size:12px;line-height:1.55}
+    .update-actions{display:flex;justify-content:flex-end;gap:10px;padding:15px 22px;border-top:1px solid #e2e8f0;background:#f8fafc}.update-action{border:1px solid #cbd5e1;border-radius:11px;padding:9px 15px;background:#fff;color:#334155;font-weight:700;cursor:pointer}.update-action.primary{border-color:#0f172a;background:#0f172a;color:#fff}.update-action:disabled{cursor:not-allowed;opacity:.5}
+    @media (max-width: 880px){.sidebar{width:88px;padding:14px 10px}.brand-copy,.nav-btn .meta,.nav-label,.hint{display:none}.brand{justify-content:center}.nav-btn{justify-content:center;padding:12px 8px}.topbar{padding:0 14px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/static/images/logo.png" alt="Adami-Canvas logo">
+        <div class="brand-copy">
+          <div class="brand-title">Adami-Canvas</div>
+          <div class="brand-sub">无限画布 · 资产库 · 方舟 API</div>
+        </div>
+      </div>
+      <div class="nav">
+        <div class="nav-label">功能</div>
+        <button class="nav-btn active" data-view="canvas" data-src="/static/canvas-list.html?v=1.0.1782313853" data-title="Adami-Canvas" data-sub="项目、画布与节点编辑">
+          <i data-lucide="panels-top-left"></i>
+          <span class="meta"><span>画布工作台</span><small>项目与画布</small></span>
+        </button>
+        <button class="nav-btn" data-view="assets" data-src="/static/asset-manager.html?v=1.0.1782313853" data-title="资产库" data-sub="图片、音频、视频与提示词资源">
+          <i data-lucide="library"></i>
+          <span class="meta"><span>资产库</span><small>管理素材资源</small></span>
+        </button>
+        <button class="nav-btn" data-view="api" data-src="/static/api-settings.html?v=1.0.1782313853" data-title="API 设置" data-sub="火山方舟 Key 与素材配置">
+          <i data-lucide="key-round"></i>
+          <span class="meta"><span>API 设置</span><small>Volcengine / Ark</small></span>
+        </button>
+        <button id="updateNavBtn" class="nav-btn" type="button">
+          <i data-lucide="cloud-download"></i>
+          <span class="meta"><span>一键更新</span><small>保留本地数据</small></span>
+          <span id="updateBadge" class="update-badge" aria-label="有新版本"></span>
+        </button>
+      </div>
+      <div class="hint">Adami-Canvas 专注于把文本、图片、音频素材组织成可发送给方舟模型的画布工作流。</div>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div id="pageTitle" class="page-title">Adami-Canvas</div>
+          <div id="pageSub" class="page-sub">项目、画布与节点编辑</div>
+        </div>
+      </div>
+      <div class="content">
+        <iframe id="contentFrame" src="/static/canvas-list.html?v=1.0.1782313853"></iframe>
+      </div>
+    </main>
+  </div>
+  <div id="updateModal" class="update-modal" hidden>
+    <section class="update-card" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
+      <div class="update-head">
+        <div id="updateTitle" class="update-title">Adami-Canvas 更新</div>
+        <button id="updateCloseBtn" class="update-close" type="button" aria-label="关闭"><i data-lucide="x"></i></button>
+      </div>
+      <div class="update-body">
+        <div class="update-version">
+          <div class="version-chip">当前版本<strong id="currentVersion">—</strong></div>
+          <div class="version-chip">最新版本<strong id="latestVersion">—</strong></div>
+        </div>
+        <div id="updateStatus" class="update-status">正在检查 GitHub 更新…</div>
+        <ul id="updateNotes" class="update-notes"></ul>
+        <div class="update-protect">更新只替换程序代码。你的画布、资产、API 配置、生成结果和日志都会保留；更新前还会自动备份旧程序。</div>
+      </div>
+      <div class="update-actions">
+        <button id="updateCheckBtn" class="update-action" type="button">重新检查</button>
+        <button id="updateInstallBtn" class="update-action primary" type="button" disabled>立即更新并重启</button>
+      </div>
+    </section>
+  </div>
+<script>
+(function(){
+  const frame = document.getElementById('contentFrame');
+  const title = document.getElementById('pageTitle');
+  const sub = document.getElementById('pageSub');
+  const buttons = [...document.querySelectorAll('.nav-btn[data-view]')];
+  function apply(btn){
+    buttons.forEach(b=>b.classList.toggle('active', b===btn));
+    title.textContent = btn.dataset.title || '';
+    sub.textContent = btn.dataset.sub || '';
+    const src = btn.dataset.src;
+    if(src && frame.getAttribute('src') !== src) frame.setAttribute('src', src);
+    try{ localStorage.setItem('adami_canvas_active_view', btn.dataset.view || 'canvas'); }catch(e){}
+  }
+  buttons.forEach(btn => btn.addEventListener('click', ()=>apply(btn)));
+  try{
+    const view = new URLSearchParams(location.search).get('view') || localStorage.getItem('adami_canvas_active_view') || 'canvas';
+    const target = buttons.find(b=>b.dataset.view===view) || buttons[0];
+    apply(target);
+  }catch(e){ apply(buttons[0]); }
+
+  const updateNavBtn = document.getElementById('updateNavBtn');
+  const updateBadge = document.getElementById('updateBadge');
+  const updateModal = document.getElementById('updateModal');
+  const updateCloseBtn = document.getElementById('updateCloseBtn');
+  const updateCheckBtn = document.getElementById('updateCheckBtn');
+  const updateInstallBtn = document.getElementById('updateInstallBtn');
+  const updateStatus = document.getElementById('updateStatus');
+  const updateNotes = document.getElementById('updateNotes');
+  const currentVersion = document.getElementById('currentVersion');
+  const latestVersion = document.getElementById('latestVersion');
+  let updateInfo = null;
+
+  function setUpdateStatus(text, type=''){
+    updateStatus.textContent = text;
+    updateStatus.className = `update-status ${type}`.trim();
+  }
+  function renderNotes(items){
+    updateNotes.replaceChildren();
+    (Array.isArray(items) ? items : []).forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = typeof item === 'string' ? item : (item && item.text) || '';
+      if(li.textContent) updateNotes.appendChild(li);
+    });
+  }
+  async function checkForUpdate(silent=false){
+    updateCheckBtn.disabled = true;
+    updateInstallBtn.disabled = true;
+    if(!silent) setUpdateStatus('正在检查 GitHub 更新…');
+    try{
+      const response = await fetch('/api/check-update', {cache:'no-store'});
+      const data = await response.json();
+      if(!response.ok) throw new Error(data.detail || '检查更新失败');
+      updateInfo = data;
+      currentVersion.textContent = data.current || '未知';
+      latestVersion.textContent = (data.latest && data.latest.version) || '未知';
+      renderNotes((data.update_notes && data.update_notes.items) || []);
+      updateBadge.classList.toggle('show', !!data.update_available);
+      updateInstallBtn.disabled = !data.update_available;
+      if(data.update_available){
+        setUpdateStatus(`发现新版本 ${data.latest.version}，可以安全更新。`, 'warn');
+      }else if(data.reachable){
+        setUpdateStatus('当前已经是最新版本。', 'ok');
+      }else{
+        setUpdateStatus('暂时无法连接 GitHub，请检查网络后重试。', 'error');
+      }
+    }catch(error){
+      if(!silent) setUpdateStatus(error.message || '检查更新失败', 'error');
+    }finally{
+      updateCheckBtn.disabled = false;
+    }
+  }
+  async function installUpdate(){
+    if(!updateInfo || !updateInfo.update_available) return;
+    if(!window.confirm('更新会自动备份旧程序并重启。你的画布、资产和 API 配置不会改变，是否继续？')) return;
+    updateInstallBtn.disabled = true;
+    updateCheckBtn.disabled = true;
+    updateCloseBtn.disabled = true;
+    setUpdateStatus('正在下载并安装更新，请不要关闭程序…', 'warn');
+    try{
+      const response = await fetch('/api/update-from-github', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({source:'github', fallback:false, auto_restart:true, restart_delay:4})
+      });
+      const data = await response.json();
+      if(!response.ok) throw new Error(data.detail || '更新失败');
+      setUpdateStatus(`已更新到 ${data.version || '新版本'}，程序正在自动重启…`, 'ok');
+      window.setTimeout(()=>location.reload(), 9000);
+    }catch(error){
+      setUpdateStatus(error.message || '更新失败', 'error');
+      updateInstallBtn.disabled = false;
+      updateCheckBtn.disabled = false;
+      updateCloseBtn.disabled = false;
+    }
+  }
+  updateNavBtn.addEventListener('click', ()=>{ updateModal.hidden=false; checkForUpdate(false); });
+  updateCloseBtn.addEventListener('click', ()=>{ if(!updateCloseBtn.disabled) updateModal.hidden=true; });
+  updateModal.addEventListener('click', event=>{ if(event.target===updateModal && !updateCloseBtn.disabled) updateModal.hidden=true; });
+  updateCheckBtn.addEventListener('click', ()=>checkForUpdate(false));
+  updateInstallBtn.addEventListener('click', installUpdate);
+  window.setTimeout(()=>checkForUpdate(true), 1800);
+  if(window.lucide && lucide.createIcons) lucide.createIcons();
+})();
+</script>
+</body>
+</html>
