@@ -610,7 +610,10 @@ function uniqueModels(list){
     });
 }
 function defaultApiProviders(){
-    return [{id:'volcengine', name:'火山引擎', base_url:'https://ark.cn-beijing.volces.com/api/v3', protocol:'volcengine', enabled:true, image_models:imageModels, chat_models:[], video_models:videoModels.length ? videoModels : DEFAULT_VIDEO_MODELS, has_key:false, key_preview:''}];
+    return [
+        {id:'apimart', name:'APIMart', base_url:'https://api.apimart.ai', protocol:'apimart', enabled:true, image_models:['gpt-image-2'], chat_models:[], video_models:[], has_key:false, key_preview:''},
+        {id:'volcengine', name:'Volcengine', base_url:'https://ark.cn-beijing.volces.com/api/v3', protocol:'volcengine', enabled:true, image_models:imageModels, chat_models:[], video_models:videoModels.length ? videoModels : DEFAULT_VIDEO_MODELS, has_key:false, key_preview:''}
+    ];
 }
 function isRunningHubProvider(provider){
     const id = String(provider?.id || '').trim().toLowerCase();
@@ -1758,7 +1761,7 @@ async function loadConfig(){
         videoModels = cfg.video_models?.length ? cfg.video_models : DEFAULT_VIDEO_MODELS;
         msChatModels = cfg.ms_chat_models?.length ? cfg.ms_chat_models : msChatModels;
         comfyBackendCount = Math.max(1, (cfg.comfy_instances || []).length || 1);
-        apiProviders = Array.isArray(cfg.api_providers) && cfg.api_providers.length ? cfg.api_providers.filter(p => p && p.id === 'volcengine') : defaultApiProviders();
+        apiProviders = Array.isArray(cfg.api_providers) && cfg.api_providers.length ? cfg.api_providers : defaultApiProviders();
         models.nano = imageModels.find(m => m.toLowerCase().includes('nano')) || 'nano-banana-pro';
         models.gpt = imageModels.find(m => !m.toLowerCase().includes('nano')) || cfg.image_model || 'gpt-image-2';
         try {

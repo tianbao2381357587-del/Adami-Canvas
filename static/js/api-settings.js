@@ -97,7 +97,7 @@ let rhWorkflowEditorState = { open:false, index:-1, entry:null, config:null, exp
 let rhEditorMode = 'workflow';
 let recommendInlineOpen = false;
 let providerDragId = '';
-const ADAMI_VOLCENGINE_ONLY = true;
+const ADAMI_VOLCENGINE_ONLY = false;
 const RECOMMENDED_APIS = [
     {
         name:'APIMART',
@@ -3224,8 +3224,8 @@ async function loadProviders(){
     setStatus(tr('api.loading'));
     try {
         const data = await fetch('/api/providers').then(r => r.json());
-        providers = (data.providers || []).filter(item => item && item.id === 'volcengine');
-        selectedId = 'volcengine';
+        providers = data.providers || [];
+        selectedId = providers.find(item => item.id === 'apimart')?.id || providers[0]?.id || '';
         renderEditor();
         setStatus('');
     } catch(err) {
@@ -3234,7 +3234,6 @@ async function loadProviders(){
 }
 async function saveProviders(){
     syncEditor();
-    providers = providers.filter(item => item && item.id === 'volcengine');
     providers.forEach(item => {
         item.id = normalizeId(item.id);
         item.protocol = item.id === 'runninghub'

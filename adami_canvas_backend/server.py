@@ -678,7 +678,7 @@ def default_api_providers():
             "image_generation_endpoint": "",
             "image_edit_endpoint": "",
             "enabled": True,
-            "primary": True,
+            "primary": False,
             "image_models": [],
             "chat_models": [],
             "video_models": [],
@@ -687,10 +687,63 @@ def default_api_providers():
             "volcengine_project_name": VOLCENGINE_DEFAULT_PROJECT_NAME,
             "volcengine_region": VOLCENGINE_DEFAULT_REGION,
         },
+        {
+            "id": "apimart",
+            "name": "APIMart",
+            "base_url": "https://api.apimart.ai",
+            "protocol": "apimart",
+            "image_request_mode": "openai",
+            "image_generation_endpoint": "",
+            "image_edit_endpoint": "",
+            "enabled": True,
+            "primary": True,
+            "image_models": ["gpt-image-2"],
+            "chat_models": [],
+            "video_models": [],
+            "ms_loras": [],
+            "ms_defaults_version": 0,
+        },
     ]
 
 
 def lite_volcengine_only(providers):
+    allowed_ids = {"volcengine", "apimart"}
+    defaults = {item["id"]: item for item in default_api_providers()}
+    items = []
+    seen = set()
+    for raw in providers or []:
+        if not isinstance(raw, dict):
+            continue
+        provider_id = str(raw.get("id") or "").strip().lower()
+        if provider_id not in allowed_ids or provider_id in seen:
+            continue
+        item = normalize_provider(raw)
+        if provider_id == "volcengine":
+            item["id"] = "volcengine"
+            item["name"] = item.get("name") or "鐏北寮曟搸"
+            item["protocol"] = "volcengine"
+            item["base_url"] = item.get("base_url") or VOLCENGINE_DEFAULT_BASE_URL
+            item["volcengine_project_name"] = item.get("volcengine_project_name") or VOLCENGINE_DEFAULT_PROJECT_NAME
+            item["volcengine_region"] = item.get("volcengine_region") or VOLCENGINE_DEFAULT_REGION
+        if provider_id == "apimart":
+            item["id"] = "apimart"
+            item["name"] = item.get("name") or "APIMart"
+            item["protocol"] = "apimart"
+            item["base_url"] = item.get("base_url") or "https://api.apimart.ai"
+            item["image_models"] = item.get("image_models") or ["gpt-image-2"]
+        item["enabled"] = item.get("enabled", True)
+        items.append(item)
+        seen.add(provider_id)
+    for provider_id in ("volcengine", "apimart"):
+        if provider_id not in seen:
+            items.append(normalize_provider(defaults[provider_id]))
+    if any(item.get("id") == "apimart" and item.get("enabled", True) for item in items):
+        for item in items:
+            item["primary"] = item.get("id") == "apimart"
+    elif not any(item.get("primary") and item.get("enabled", True) for item in items):
+        for item in items:
+            item["primary"] = item.get("id") == "volcengine"
+    return items
     """Adami-Canvas：过滤掉 ModelScope / RunningHub / 即梦 / 其他平台，只保留火山引擎。"""
     items = [normalize_provider(item) for item in (providers or []) if isinstance(item, dict) and str(item.get("id") or "").strip().lower() == "volcengine"]
     if not items:
